@@ -1,0 +1,160 @@
+---
+title: ""
+author: "Duc-Quang Nguyen | swissinfo.ch"
+date: " 2017"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: simplex
+---
+## Txt
+
+
+## Idées
+
+* Évolution du nombre de frontaliers en Suisse ces 20 dernières années -> [data depuis 2002](https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-0302010000_102)
+* Carte des communes qui emploient le plus de frontaliers
+
+* Carte des frontaliers au niveau européen?
+* Types d’emplois occupés par les frontaliers
+ 
+ 
+ 
+#### Snippets
+
+## Data
+
+* [Page général de l'OFS](https://www.bfs.admin.ch/bfs/fr/home/statistiques/travail-remuneration/enquetes/ggs.html)
+  * [Frontaliers étrangers selon le sexe, le canton de travail et le pays de résidence](https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-0302010000_102)
+  * [Frontaliers étrangers selon le sexe et la commune de travail](https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-0302010000_101)
+  * [Frontaliers étrangers selon le sexe, le canton de travail et les secteurs, sections et divisions économiques](https://www.pxweb.bfs.admin.ch/Selection.aspx?px_language=fr&px_db=px-x-0302010000_105&px_tableid=px-x-0302010000_105\px-x-0302010000_105.px&px_type=PX)
+
+# Emplois par commune
+* [Etablissements et emplois selon la commune, le secteur économique et la classe de taille](https://www.pxweb.bfs.admin.ch/Selection.aspx?px_language=fr&px_db=px-x-0602010000_102&px_tableid=px-x-0602010000_102%5Cpx-x-0602010000_102.px&px_type=PX)
+
+* Emplois par division économique
+* [Emplois par division économique, taux d'occupation et sexe](https://www.pxweb.bfs.admin.ch/Selection.aspx?px_language=fr&px_db=px-x-0602000000_101&px_tableid=px-x-0602000000_101/px-x-0602000000_101.px&px_type=PX)
+
+Eurostats
+* [General page](http://ec.europa.eu/eurostat/statistics-explained/index.php?title=Statistics_on_commuting_patterns_at_regional_level&oldid=303997#Cross-border_commuting)
+* [Eurostat](http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=lfst_r_lfe2ecomm&lang=en)
+## Related
+
+
+```{r setup, include=FALSE}
+processPx <- F
+
+frontalier1.px <- structure("https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-0302010000_102", names = "input/px-x-0302010000_102.csv")
+frontalier2.px <- structure("https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-0302010000_101", names = "input/px-x-0302010000_101.csv")
+frontalier3.px <- structure("https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-0302010000_105", names = "input/px-x-0302010000_105.csv")
+statent.px     <- structure("https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-0602010000_102", names = "input/px-x-0602010000_102.csv")
+
+library(tidyverse)
+library(scales)
+library(magrittr)
+library(countrycode)
+library(swiMap)
+library(swiTheme)
+
+### Getting data in packages
+library(readxl)
+options(tibble.width = Inf)
+```
+
+```{r helpe, include=F}
+
+## helper to translate PX file
+translate <- function(colname = 'Result.variable', dd, fr, de) {
+  # find which colname idx
+  i <- which(names(fr) == colname)
+  # split single string to a string vector
+  translations <- unlist(strsplit(fr[[i]], '", ?"'))
+  stopifnot(length(translations) == length(de[[i]]))
+  
+  # match each term of the dd to the levels
+  idx <- match(dd[[colname]], de[[i]])
+  stopifnot(all(!is.na(idx)))
+  
+  factor(translations[idx])
+}
+
+loadPxAndTranlate <- function(px.file, returnCode = NULL) {
+  library(RCurl)
+  url <- getURL(px.file)
+  px.read  <- read.px(textConnection(url))  
+  
+  px <- px.read$DATA[[1]]
+  # get the French terms
+  fr <- px.read$VALUES.fr.
+  de <- px.read$VALUES
+ 
+  colnames(px)[-ncol(px)] <- rev(names(fr))
+  
+  # apply translation
+  for(coln in colnames(px)[-ncol(px)]) {
+    px[,coln]<- translate(coln, px, fr, de)
+  }
+
+  if(!is.null(returnCode)) {
+    codes <- unlist(strsplit(px.read$CODES.fr.[[returnCode]], '", ?"'))
+    stopifnot(length(codes) == length(unique(px[[returnCode]])))
+    names(codes) <- unique(px[[returnCode]])
+    px <- cbind(px, code = codes[match(px[[returnCode]], names(codes))])
+    colnames(px)[ncol(px)] <- paste0(paste0(returnCode, "_code"))
+  }
+  px
+}
+
+```
+
+```{r data load}
+if(processPx) {
+  library(pxR)
+  loadPxAndTranlate(frontalier1.px) %>% as.tibble() %>% write_csv(names(frontalier1.px))
+  loadPxAndTranlate(frontalier2.px, returnCode = "Commune.de.travail") %>% as.tibble() %>% write_csv(names(frontalier2.px))
+  loadPxAndTranlate(frontalier3.px, returnCode = "Section.économique") %>% as.tibble() %>% write_csv(names(frontalier3.px))
+  loadPxAndTranlate(statent.px, returnCode = "Commune")  %>% as.tibble() %>% write_csv(names(statent.px))
+  
+} else {
+  
+  px1 <- read_csv(names(frontalier1.px))  
+  px2 <- read_csv(names(frontalier2.px))  
+  px3 <- read_csv(names(frontalier3.px))  
+  px4 <- read_csv(names(statent.px))  
+}
+
+```
+
+```{r subset the data}
+### Nombre total de frontaliers par pays
+# 1. convert to date
+library(zoo)
+px1 %<>% mutate(Trimestre = Trimestre %>% as.yearqtr(format = "%YQ%q") %>% as.Date())
+# 2. drop cantons & sex
+px1 %<>% filter(Canton.de.travail == "Suisse", Sexe == "Sexe - Total") %>% 
+  select(-Canton.de.travail,-Sexe) %>%
+  dplyr::rename(date = Trimestre, origine = Pays.de.résidence) 
+# 3. keep only main country of origin
+
+tot <- px1 %>% group_by(origine) %>% dplyr::summarise(tot = sum(value)) %>% 
+  arrange(desc(tot))
+
+#tot.ts <- px1 %>% dplyr::filter(origine == 'Pays de résidence - Total')
+px1 %<>% dplyr::filter(origine != 'Pays de résidence - Total')
+
+px1 %>% group_by(date) %>% dplyr::summarise(value = sum(value))
+
+origin.sub <- c('France', 'Italie', 'Allemagne', 'Autriche')
+
+px1 %<>% mutate(group = factor(ifelse(origine %in% origin.sub, origine, "Autres pays"), levels = c(origin.sub, "Autres pays"))) 
+
+px1 %>% group_by(date, group) %>%
+  summarise(value = round(sum(value))) %>%
+  arrange(date) %>% 
+  spread(group, value) %>%
+  write_csv("input/frontalierParPaysdOrigine.csv")
+  
+## datawrapper BZLXh
+```
+**[DW](//datawrapper.dwcdn.net/BZLXh/1/)**

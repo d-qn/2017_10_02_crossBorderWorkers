@@ -1,0 +1,236 @@
+---
+title: "Carte frontalier"
+author: "Duc-Quang Nguyen | swissinfo.ch"
+date: " 2017"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: simplex
+---
+## Txt
+
+
+
+#### Snippets
+
+## Data
+
+
+```{r setup, include=FALSE}
+lang2lang3 <- structure(c("EN","FR","DE",	"IT","PT","AR","RU","ES","JA","ZH"),
+                names = c('eng', 'fre', 'ger', 'ita', 'por', 'ara', 'rus', 'spa', 'jpn', 'chi'))
+
+communeCH_geo_year <- 2015
+frontalier.file <- "input/px-x-0302010000_101.csv"
+statent.file <- "input/px-x-0602010000_102.csv"
+cities.file <- "input/cities.csv"
+
+
+library(tidyverse)
+library(scales)
+library(magrittr)
+library(countrycode)
+library(swiMap)
+library(swiTheme)
+
+### Interactive 
+library(htmltools)
+library(shiny)
+library(swiRcharts)
+library(rCharts)
+
+### Mapping 
+require(rgdal)
+require(rgeos)
+require(maptools)
+
+### Misc stuff
+#require(classInt)
+require(viridis)
+```
+
+```{r data load & wrangle, cache=T}
+# 1. load data
+cbw.read <- read_csv(frontalier.file)
+job.read <- read_csv(statent.file)
+
+
+# map stuff   --------->  2016 commune data has 36 unmatching communes for statent
+ch.shp <- readOGR(swiMap::getPathShp('CH', communeCH_geo_year), "municipalities")
+ch.df <- formatShp(spTransform(rmapshaper::ms_simplify(ch.shp), CRS("+init=epsg:4326")))
+
+lakes.shp <- readOGR(swiMap::getPathShp('CH', communeCH_geo_year), "lakes")
+lakes.df <- formatShp(spTransform(rmapshaper::ms_simplify(lakes.shp), CRS("+init=epsg:4326")))
+
+co <- spTransform(readOGR(swiMap::getPathShp('CH', communeCH_geo_year), layer = 'country'), CRS("+init=epsg:4326"))
+co.df <- formatShp(co)
+co.df$id <- as.numeric(co.df$id)
+
+## cities
+cities <- read_csv(cities.file) %>% rename(pop = size)
+
+
+# path <- getPathShp('world')
+# layers <-  ogrListLayers(path)
+# world <- readOGR(path, layer = layers[1])
+# world.df <- formatShp(world)
+# subset only europe
+#world.df %>% filter(REGION == 150) %>% select(NAME) %>% distinct()
+#world.df %<>% filter
+library(mapdata)
+world.df <- map_data(map="worldHires") %>% filter(region %in% c("France", "Italy", "Germany", "Austria"))
+
+
+if(communeCH_geo_year == 2015) {
+  communes <- ch.df %>% select(GEMNAME, BFSNR) %>%
+    rename(commune = GEMNAME, code = BFSNR) %>%
+    distinct() %>%
+    mutate(code = as.numeric(as.character(code))) %>%
+    arrange(code, commune) %>% as.tibble()  
+  ch.df %<>% rename(commune = GEMNAME, code = BFSNR) %>%
+     mutate(code = as.numeric(as.character(code)))
+} else {
+  communes <- ch.df %>% select(NAME, BFS_NUMMER) %>% 
+    distinct() %>% 
+    mutate(BFS_NUMMER = as.numeric(as.character(BFS_NUMMER))) %>%
+    arrange(BFS_NUMMER, NAME) %>% as.tibble() 
+}
+
+# 2. Trim
+max(cbw.read$Trimestre)
+cbw <- cbw.read %>% 
+  filter(Trimestre == max(cbw.read$Trimestre), Sexe == "Total") %>%
+  select(-Trimestre, -Sexe) %>%
+  mutate(code = Commune.de.travail_code %>% as.numeric()) %>%
+# filter canton and country (NA)
+  filter(!is.na(code)) %>%
+  rename(commune = Commune.de.travail) %>%
+  select(commune, value, code) %>%
+  mutate(commune = gsub("^\\.\\.\\.\\.\\.\\.", "", commune)) %>%
+  arrange(code)
+
+max(job.read$Année)
+job <- job.read %>% 
+  filter(Année == max(job.read$Année), Variable == "Emplois") %>%
+  select(-Année, -Variable) %>% 
+  group_by(Commune, Commune_code) %>%
+  summarise(value = sum(value, na.rm = T)) %>%
+  ungroup() %>%
+  mutate(Commune = gsub("^\\d+ ", "", Commune)) %>%
+  rename(commune = Commune, code = Commune_code) %>%
+  arrange(code)
+  
+#2. ensure consistency between communes & BFS codes
+sum(!cbw$code %in% communes$BFS_NUMMER)
+sum(!cbw$commune %in% communes$NAME)
+
+sum(!job$code %in% communes$BFS_NUMMER)
+sum(!job$commune %in% communes$NAME)
+
+#3. Merge
+data <- ch.df %>% 
+  left_join(cbw %>% select(-commune), by = "code") %>%
+  left_join(job %>% rename(tot = value) %>% select(-commune), by = "code")
+  
+#4. compute percentage and clean
+data %<>% mutate(pc = (value / tot)* 100) %>%
+  rename(lng = long)
+
+```
+
+
+```{r map helpers}
+colourText_bkbg <- '#ffffff'
+border.color <- "#404040"
+
+# helper mapping 
+bk_mapTheme <- function(
+  base_size = 14, base_family = "OpenSans-CondensedLight",
+  title_family = "OpenSans-CondensedBold", subtitle_family = "OpenSans-CondensedLight",
+  bg.colour = '#1a0000', colour = colourText_bkbg
+) {
+  swi_theme(
+    y_gridlines = F, base_size = base_size, base_family = base_family, 
+    title_family = title_family, subtitle = subtitle_family
+  ) + 
+    theme(
+      panel.background = element_rect(fill = bg.colour, size = 0),
+      plot.background = element_rect(fill = bg.colour, size = 0),
+      axis.line = element_blank(),
+      axis.ticks = element_blank(), 
+      axis.title = element_blank(), 
+      axis.text = element_blank(),
+      plot.title = element_text(colour = colour), 
+      plot.subtitle = element_text(colour = "white", margin=margin(b=13)),
+      plot.caption = element_text(colour = colour),
+      legend.text = element_text(colour = colourText_bkbg, size = 11, hjust = 1),
+      legend.title = element_text(colour = colourText_bkbg, size = 10.5),
+      legend.key.width = unit(19, "lines"),
+      legend.key.height = unit(10, "lines"),
+      legend.position = "top",
+      legend.title.align = 0,
+      strip.text = element_text(family = title_family, colour = "#ffe6e6", size = 14),
+      plot.margin = unit(c(-2.7, 0.2, -1.2, 0.05), "cm")
+    ) 
+}
+bTheme <- function() {
+  bk_mapTheme(base_family = txt['base.font', lang], title_family = txt['title.font', lang], subtitle_family = txt['base.font', lang])
+}
+ 
+```
+
+
+```{r map}
+data %<>% select(lng, lat, order, id, group, code, commune, KANTONSNR, value, tot, pc) %>%
+  mutate(canton = match(KANTONSNR %>% as.character() %>% as.numeric(), canton_CH$order))
+                                  
+lang <- 'FR'
+
+
+
+for (lang in colnames(txt)) {
+  largeAgglo <- cities 
+  
+  ddd <- data %>% mutate(canton = canton_CH[canton, names(lang2lang3)[which(lang2lang3 == lang)]])
+  
+  ddd$tp <- paste0(
+    '<h4>', as.character(ddd$commune), '</h4><div class="tpsubtitle">',
+    ddd$canton,
+    '</div><div class = "tp"><b>', txt['pc', lang],
+    '</b> ', txt['frontalier.tp', lang], '<br>', 
+    ddd$value, " ", txt['frontalier2.tp', lang], " / ",
+    ddd$tot, " ", txt['emplois.tp', lang],
+    '</div>'
+  )
+    
+}
+  
+
+  
+
+  
+  ddd$tip <- paste0(
+    '<h4>', as.character(ddd$GEMNAME), '</h4><div class="tpsubtitle">',
+    ddd$canton, '</div><div class = "tp">', txt['turc.tp', lang],
+   ' <b>', ifelse(ddd$value < 1, round(ddd$value, 3), round(ddd$value, 1)), '%</b>',
+    '<br>', ddd$Turquie, " ", txt['outof.tp', lang], " ", ddd$populationTot,  " ", txt['inhabitant.tp', lang], '</div>'
+  )
+  ddd$tip <- gsub("'", "_", gsub("\\\n", "", ddd$tip))  
+    
+ggplot(data) + 
+  geom_polygon(data = world.df, aes(long, lat, group = group), colour = "white", size = 0.3, alpha = 0.5) +
+    geom_polygon(data = co.df,  aes(x = long, y = lat, group = group),
+                 size = 2.5, colour = border.color, fill='#1a0000') +
+  geom_polygon(aes(lng, lat, group = code, fill = pc), colour = NA, size = 1) + 
+  geom_polygon(data = lakes.df, aes(long, lat, group = group), colour = border.color, size = 1, fill = border.color) + 
+
+  bk_mapTheme() +
+  coord_quickmap(expand = F) + 
+    scale_fill_viridis( option = "A",
+      #name = paste0(txt['for.leg', lang], "  "),
+      direction = 1,  trans = "log1p"
+    ) +
+  coord_map(xlim = c(5.7,10.8), ylim = c(45.7, 47.8))
+
+```

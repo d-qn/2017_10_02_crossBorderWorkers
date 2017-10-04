@@ -1,0 +1,25 @@
+code,EN,FR,DE,IT,PT,AR,RU,ES,JA,ZH
+title,,Pourcentage d'emplois occupé par des frontaliers,,,,,,,,
+descr,,Les communes sont colorées d'après la proportion de travailleurs frontaliers étrangers. ,,,,,,,,
+footer,,Estimation basée sur le nombre d'emplois par commune en 2015 et d'employés frontaliers en 2017Q2,,,,,,,,
+frontalier.tp,Foreigners,% de travailleurs frontaliers,Ausländerinnen und Ausländer,Stranieri,Estrangeiros,Foreigners,Иностранцы ,Extranjeros,外国人,外籍人士
+frontalier2.tp,Percentage points since 2010,frontaliers,Prozentpunkte seit 2010,Punti percentuali dal 2010,pontos percentuais desde 2010,Percentage points since 2010,Динамика начиная с 2010 года,"
+
+Puntos porcentuales desde 2010",ポイント（２０１０年比）,2010年以来的百分比
+emplois.tp,Population,emplois,Bevölkerung,Popolazione,População,Population,Население,"
+
+Población",人口,人口  
+agglosize,Inhabitants (in thousands),Habitants (en milliers),Einwohner (in tausend),Abitanti (in migliaia),Habitantes (em milhares),Inhabitants (in thousands),Число жителей (тыс.),Habitantes (en miles),人口（単位：千人）,居民数(以千计)
+Zürich,Zurich,Zurich,Zürich,Zurigo,Zurique,Zurich,Цюрих,Zúrich,チューリヒ,苏黎世
+Bern,Bern,Berne,Bern,Berna,Berna,Bern,Берн,Berna,ベルン,伯尔尼
+Basel,Basel,Bâle,Basel,Basilea,Basileia,Basel,Базель,Basilea,バーゼル,巴塞尔
+Genève,Geneva,Genève,Genf,Ginevra,Genebra,Geneva,Женева,Ginebra,ジュネーブ,日内瓦
+Lausanne,Lausanne,Lausanne,Lausanne,Losanna,Lausanne,Lausanne,Лозанна,Lausana,ローザンヌ,洛桑
+it.nat,Italy,Italie,Italien,Italia,Itália,Italy,Италия,Italia ,イタリア,意大利 
+de.nat,Germany,Allemagne,Deutschland,Germania,Alemanha,Germany,Германия,Alemania,ドイツ,德国
+fr.nat,France,France,Frankreich,Francia,França,France,Франция,Francia,フランス,法国
+au.nat,,Auriche,,,,,,,,
+source,Source,source,Quelle,Fonte,fonte,المصدر,Источник,Fuente,出典,来源
+source.name,Federal Statistical Office and swisstopo | swissinfo.ch,Office fédéral de la statistique et swisstopo  | swissinfo.ch ,Bundesamt für Statistik und swisstopo | swissinfo.ch ,Ufficio federale di statistica e swisstopo | swissinfo.ch ,Secretaria Federal de Estatísticas e Swisstopo | swissinfo.ch ,فليكر، المكتب الفدرالي للإحصاء، المكتب الفدرالي السويسري للطبوغرافيا swissinfo.ch I,Источник: Bundesamt für Statistik и swisstopo | swissinfo.ch ,Oficina Federal de Estadística y swisstopo | swissinfo.ch ,連邦統計局、swisstopo  | swissinfo.ch ,瑞士联邦统计局及swisstopo | 瑞士资讯swissinfo.ch 
+base.font,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,PingFang SC Semibold,PingFang SC Semibold
+title.font,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,Hiragino Sans W1,PingFang SC Light
