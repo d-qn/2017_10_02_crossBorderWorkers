@@ -227,7 +227,8 @@ if(communeCH_geo_year == 2015) {
 }
 
 # 2. Trim
-max(cbw.read$Trimestre)</code></pre>
+cbw.date &lt;- max(cbw.read$Trimestre)
+cbw.date</code></pre>
 <pre><code>## [1] &quot;2017Q2&quot;</code></pre>
 <pre class="r"><code>cbw &lt;- cbw.read %&gt;% 
   filter(Trimestre == max(cbw.read$Trimestre), Sexe == &quot;Total&quot;) %&gt;%
@@ -240,7 +241,8 @@ max(cbw.read$Trimestre)</code></pre>
   mutate(commune = gsub(&quot;^\\.\\.\\.\\.\\.\\.&quot;, &quot;&quot;, commune)) %&gt;%
   arrange(code)</code></pre>
 <pre><code>## Warning in function_list[[k]](value): NAs introduced by coercion</code></pre>
-<pre class="r"><code>max(job.read$Année)</code></pre>
+<pre class="r"><code>job.date &lt;- max(job.read$Année)
+job.date</code></pre>
 <pre><code>## [1] 2015</code></pre>
 <pre class="r"><code>job &lt;- job.read %&gt;% 
   filter(Année == max(job.read$Année), Variable == &quot;Emplois&quot;) %&gt;%
@@ -283,23 +285,24 @@ bk_mapTheme &lt;- function(
     title_family = title_family, subtitle = subtitle_family
   ) + 
     theme(
-      panel.background = element_rect(fill = bg.colour, size = 0),
-      plot.background = element_rect(fill = bg.colour, size = 0),
+      panel.background = element_rect(fill = bg.colour, size = 0, color = bg.colour),
+      panel.border = element_blank(),
+      plot.background = element_rect(fill = bg.colour, size = 0, color = bg.colour),
       axis.line = element_blank(),
       axis.ticks = element_blank(), 
       axis.title = element_blank(), 
       axis.text = element_blank(),
       plot.title = element_text(colour = colour), 
-      plot.subtitle = element_text(colour = &quot;white&quot;, margin=margin(b=13)),
-      plot.caption = element_text(colour = colour),
-      legend.text = element_text(colour = colourText_bkbg, size = 11, hjust = 1),
-      legend.title = element_text(colour = colourText_bkbg, size = 10.5),
-      legend.key.width = unit(2.5, &quot;lines&quot;),
-      legend.key.height = unit(0.5, &quot;lines&quot;),
+      #plot.subtitle = element_text(colour = &quot;white&quot;, margin=margin(b=13)),
+      #plot.caption = element_text(colour = colour),
+      legend.text = element_text(colour = colourText_bkbg, size = 9, hjust = 1),
+      legend.title = element_text(colour = colourText_bkbg, size = 10),
+      legend.key.width = unit(2, &quot;lines&quot;),
+      legend.key.height = unit(0.7, &quot;lines&quot;),
       legend.position = &quot;top&quot;,
       legend.title.align = 0,
-      strip.text = element_text(family = title_family, colour = &quot;#ffe6e6&quot;, size = 14),
-      plot.margin = unit(c(-2.7, 0.2, -1.2, 0.05), &quot;cm&quot;)
+     # strip.text = element_text(family = title_family, colour = &quot;#ffe6e6&quot;, size = 14),
+      plot.margin = unit(c(0, 0.2, 0, 0.05), &quot;cm&quot;)
     ) 
 }</code></pre>
 <pre class="r"><code>data %&lt;&gt;% select(lng, lat, order, id, group, code, commune, KANTONSNR, value, tot, pc) %&gt;%
@@ -331,48 +334,48 @@ for (lang in colnames(txt)) {
     '&lt;/div&gt;')
   ))
    
-   
   map &lt;- ggplot(ddd) + 
-    coord_quickmap(xlim = c(5.7,10.8), ylim = c(45.7, 47.8), expand = F) + 
-    #coord_map(xlim = c(5.7,10.8), ylim = c(45.7, 47.8)) + 
+    coord_quickmap(xlim = c(5.7,10.8), ylim = c(45.7, 47.9), expand = F) + 
     geom_polygon(data = world.df, aes(long, lat, group = group), 
-                 colour = &quot;white&quot;, size = 0.3, alpha = 0.5, fill = &quot;#404040&quot;) +
+                 colour = &quot;white&quot;, size = 0.2, alpha = 0.3, fill = &quot;#333333&quot;) +
     geom_polygon(data = co.df,  aes(x = long, y = lat, group = group),
-                 size = 2.5, colour = border.color, fill='#1a0000') +
+                 size = 1.3, colour = border.color, fill=NA) +
     geom_polygon_interactive(aes(lng, lat, group = code, fill = pc, data_id = code, tooltip = tp), 
                              colour = NA, size = 1) + 
     geom_polygon(data = lakes.df, aes(long, lat, group = group), 
                  colour = border.color, size = 1, fill = border.color) + 
     bk_mapTheme() +
-    scale_fill_viridis( option = &quot;A&quot;,
-                        name = paste0(txt['frontalier.tp', lang], &quot;  &quot;),
-                        direction = 1,  trans = &quot;log1p&quot;
+    scale_fill_viridis( 
+      option = &quot;A&quot;, breaks = pretty(ddd$pc, n = 3, high.u.bias = 0),
+      name = paste0(txt['frontalier.tp', lang], &quot;  &quot;),
+      direction = 1,  trans = &quot;log1p&quot;
     ) 
 
   map2 &lt;- map + geom_point(
     data = largeAgglo,
     aes(x = lon, y = lat, group = 1, size = pop),         
-    alpha = 0.6, colour = colourText_bkbg, shape = 1
+    alpha = 0.5, colour = colourText_bkbg, shape = 1
   ) + 
     scale_size(range = c(3,7), name = paste0(txt['agglosize', lang], &quot;  &quot;)) + 
     guides(size = &quot;none&quot;) + 
     geom_text(
       data = largeAgglo,
       aes(x = lon, y = lat, group = 1, label = label),
-      alpha = 0.55,
+      alpha = 0.5,
       family = txt['base.font', lang],
       colour = colourText_bkbg,
       nudge_y = -0.082,
       nudge_x = 0.05,
-      size = 4
-    ) 
+      size = 3.7
+    ) + theme( axis.line = element_blank())
   
-  tooltip_css &lt;- &quot;background-color:#333333;padding:0px;margin:0px;border-radius:5px;&quot;
+  tooltip_css &lt;- &quot;background-color:#333333;padding:0px;margin:0px;border-radius:4px;&quot;
   
   imap &lt;- ggiraph(
     code = {print(map2)}, 
     tooltip_extra_css = tooltip_css,
-    height_svg = 4,
+    height_svg = 4.5,
+    zoom_max = 1,
     hover_css = &quot;fill:#4c6570;&quot;,
     fonts = list(fontname_sans = 'Open Sans Condensed',  fontname_serif = 'Open Sans Condensed')
   )
@@ -384,22 +387,22 @@ for (lang in colnames(txt)) {
         tags$head(includeHTML(&quot;styles.html&quot;)),
         tags$body(    
           h2(txt[&quot;title&quot;, lang]),
-          div(class = &quot;descr&quot;, HTML(paste0(txt[&quot;descr&quot;, lang],  '&amp;nbsp; &amp;nbsp; &lt;img src=&quot;Interactive_icon.svg.png&quot; width=&quot;23&quot; align=&quot;top&quot;&gt;'))),
+          div(class = &quot;descr&quot;, HTML(
+            paste0('&lt;img src=&quot;https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png&quot; width=&quot;12&quot; align=&quot;top&quot;&gt;&amp;nbsp;', txt[&quot;descr&quot;, lang]))),
           div(class=&quot;container&quot;, imap),
+          div(class = &quot;footer&quot;, HTML(txt[&quot;footer&quot;, lang])),
           div(id = &quot;cite&quot;, HTML(footer)),
-          div(id = &quot;footer&quot;, HTML(txt[&quot;footer&quot;, lang])),
           HTML(iframeresizer)  
         )), file = outfile, libdir = &quot;js&quot;, background = '#1a0000'
     )
     
     # move stuff
     fileToMove &lt;- c(outfile,  &quot;js&quot;)
+    if(file.exists(&quot;output/js&quot;)) {
+      unlink(&quot;output/js&quot;, recursive = T)
+    }
     file.rename(from = fileToMove, to = paste0(&quot;output/&quot;, fileToMove))
-    
 }</code></pre>
-<pre><code>## Warning in file.rename(from = fileToMove, to = paste0(&quot;output/&quot;,
-## fileToMove)): cannot rename file 'js' to 'output/js', reason 'Directory not
-## empty'</code></pre>
 </div>
 
 

@@ -1,7 +1,7 @@
 code,EN,FR,DE,IT,PT,AR,RU,ES,JA,ZH
 title,,Pourcentage d'emplois occupé par des frontaliers,,,,,,,,
 descr,,Les communes sont colorées d'après la proportion de travailleurs frontaliers étrangers. ,,,,,,,,
-footer,,Estimation basée sur le nombre d'emplois par commune en 2015 et d'employés frontaliers en 2017Q2,,,,,,,,
+footer,,Estimation basée sur le nombre d'emplois par commune en {{job.max}} et d'employés frontaliers en {{cbw.date}},,,,,,,,
 frontalier.tp,Foreigners,% de travailleurs frontaliers,Ausländerinnen und Ausländer,Stranieri,Estrangeiros,Foreigners,Иностранцы ,Extranjeros,外国人,外籍人士
 frontalier2.tp,Percentage points since 2010,frontaliers,Prozentpunkte seit 2010,Punti percentuali dal 2010,pontos percentuais desde 2010,Percentage points since 2010,Динамика начиная с 2010 года,"
 

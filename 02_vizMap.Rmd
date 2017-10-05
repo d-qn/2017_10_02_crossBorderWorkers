@@ -103,7 +103,8 @@ if(communeCH_geo_year == 2015) {
 }
 
 # 2. Trim
-max(cbw.read$Trimestre)
+cbw.date <- max(cbw.read$Trimestre)
+cbw.date
 cbw <- cbw.read %>% 
   filter(Trimestre == max(cbw.read$Trimestre), Sexe == "Total") %>%
   select(-Trimestre, -Sexe) %>%
@@ -115,7 +116,8 @@ cbw <- cbw.read %>%
   mutate(commune = gsub("^\\.\\.\\.\\.\\.\\.", "", commune)) %>%
   arrange(code)
 
-max(job.read$Année)
+job.date <- max(job.read$Année)
+job.date
 job <- job.read %>% 
   filter(Année == max(job.read$Année), Variable == "Emplois") %>%
   select(-Année, -Variable) %>% 
@@ -160,23 +162,24 @@ bk_mapTheme <- function(
     title_family = title_family, subtitle = subtitle_family
   ) + 
     theme(
-      panel.background = element_rect(fill = bg.colour, size = 0),
-      plot.background = element_rect(fill = bg.colour, size = 0),
+      panel.background = element_rect(fill = bg.colour, size = 0, color = bg.colour),
+      panel.border = element_blank(),
+      plot.background = element_rect(fill = bg.colour, size = 0, color = bg.colour),
       axis.line = element_blank(),
       axis.ticks = element_blank(), 
       axis.title = element_blank(), 
       axis.text = element_blank(),
       plot.title = element_text(colour = colour), 
-      plot.subtitle = element_text(colour = "white", margin=margin(b=13)),
-      plot.caption = element_text(colour = colour),
-      legend.text = element_text(colour = colourText_bkbg, size = 11, hjust = 1),
-      legend.title = element_text(colour = colourText_bkbg, size = 10.5),
-      legend.key.width = unit(2.5, "lines"),
-      legend.key.height = unit(0.5, "lines"),
+      #plot.subtitle = element_text(colour = "white", margin=margin(b=13)),
+      #plot.caption = element_text(colour = colour),
+      legend.text = element_text(colour = colourText_bkbg, size = 9, hjust = 1),
+      legend.title = element_text(colour = colourText_bkbg, size = 10),
+      legend.key.width = unit(2, "lines"),
+      legend.key.height = unit(0.7, "lines"),
       legend.position = "top",
       legend.title.align = 0,
-      strip.text = element_text(family = title_family, colour = "#ffe6e6", size = 14),
-      plot.margin = unit(c(-2.7, 0.2, -1.2, 0.05), "cm")
+     # strip.text = element_text(family = title_family, colour = "#ffe6e6", size = 14),
+      plot.margin = unit(c(0, 0.2, 0, 0.05), "cm")
     ) 
 }
 
@@ -213,48 +216,48 @@ for (lang in colnames(txt)) {
     '</div>')
   ))
    
-   
   map <- ggplot(ddd) + 
-    coord_quickmap(xlim = c(5.7,10.8), ylim = c(45.7, 47.8), expand = F) + 
-    #coord_map(xlim = c(5.7,10.8), ylim = c(45.7, 47.8)) + 
+    coord_quickmap(xlim = c(5.7,10.8), ylim = c(45.7, 47.9), expand = F) + 
     geom_polygon(data = world.df, aes(long, lat, group = group), 
-                 colour = "white", size = 0.3, alpha = 0.5, fill = "#404040") +
+                 colour = "white", size = 0.2, alpha = 0.3, fill = "#333333") +
     geom_polygon(data = co.df,  aes(x = long, y = lat, group = group),
-                 size = 2.5, colour = border.color, fill='#1a0000') +
+                 size = 1.3, colour = border.color, fill=NA) +
     geom_polygon_interactive(aes(lng, lat, group = code, fill = pc, data_id = code, tooltip = tp), 
                              colour = NA, size = 1) + 
     geom_polygon(data = lakes.df, aes(long, lat, group = group), 
                  colour = border.color, size = 1, fill = border.color) + 
     bk_mapTheme() +
-    scale_fill_viridis( option = "A",
-                        name = paste0(txt['frontalier.tp', lang], "  "),
-                        direction = 1,  trans = "log1p"
+    scale_fill_viridis( 
+      option = "A", breaks = pretty(ddd$pc, n = 3, high.u.bias = 0),
+      name = paste0(txt['frontalier.tp', lang], "  "),
+      direction = 1,  trans = "log1p"
     ) 
 
   map2 <- map + geom_point(
     data = largeAgglo,
     aes(x = lon, y = lat, group = 1, size = pop),         
-    alpha = 0.6, colour = colourText_bkbg, shape = 1
+    alpha = 0.5, colour = colourText_bkbg, shape = 1
   ) + 
     scale_size(range = c(3,7), name = paste0(txt['agglosize', lang], "  ")) + 
     guides(size = "none") + 
     geom_text(
       data = largeAgglo,
       aes(x = lon, y = lat, group = 1, label = label),
-      alpha = 0.55,
+      alpha = 0.5,
       family = txt['base.font', lang],
       colour = colourText_bkbg,
       nudge_y = -0.082,
       nudge_x = 0.05,
-      size = 4
-    ) 
+      size = 3.7
+    ) + theme( axis.line = element_blank())
   
-  tooltip_css <- "background-color:#333333;padding:0px;margin:0px;border-radius:5px;"
+  tooltip_css <- "background-color:#333333;padding:0px;margin:0px;border-radius:4px;"
   
   imap <- ggiraph(
     code = {print(map2)}, 
     tooltip_extra_css = tooltip_css,
-    height_svg = 4,
+    height_svg = 4.5,
+    zoom_max = 1,
     hover_css = "fill:#4c6570;",
     fonts = list(fontname_sans = 'Open Sans Condensed',  fontname_serif = 'Open Sans Condensed')
   )
@@ -266,16 +269,20 @@ for (lang in colnames(txt)) {
         tags$head(includeHTML("styles.html")),
         tags$body(    
           h2(txt["title", lang]),
-          div(class = "descr", HTML(paste0(txt["descr", lang],  '&nbsp; &nbsp; <img src="Interactive_icon.svg.png" width="23" align="top">'))),
+          div(class = "descr", HTML(
+            paste0('<img src="https://interactive.swissinfo.ch/assets/Interactive_icon.svg.png" width="12" align="top">&nbsp;', txt["descr", lang]))),
           div(class="container", imap),
+          div(class = "footer", HTML(txt["footer", lang])),
           div(id = "cite", HTML(footer)),
-          div(id = "footer", HTML(txt["footer", lang])),
           HTML(iframeresizer)  
         )), file = outfile, libdir = "js", background = '#1a0000'
     )
     
     # move stuff
     fileToMove <- c(outfile,  "js")
+    if(file.exists("output/js")) {
+      unlink("output/js", recursive = T)
+    }
     file.rename(from = fileToMove, to = paste0("output/", fileToMove))
 }
 
