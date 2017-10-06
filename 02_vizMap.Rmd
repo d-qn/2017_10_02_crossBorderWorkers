@@ -92,7 +92,6 @@ library(mapdata)
 world.df <- map_data(map="worldHires") %>% 
   filter(region %in% c("France", "Italy", "Germany", "Austria"))
 
-
 if(communeCH_geo_year == 2015) {
   communes <- ch.df %>% select(GEMNAME, BFSNR) %>%
     rename(commune = GEMNAME, code = BFSNR) %>%
@@ -224,9 +223,9 @@ for (lang in colnames(txt)) {
   ))
    
   map <- ggplot(ddd) + 
-    coord_quickmap(xlim = c(5.7,10.8), ylim = c(45.7, 48), expand = F) + 
-    geom_polygon(data = world.df, aes(long, lat, group = group), 
-                 colour = "white", size = 0.2, alpha = 0.3, fill = "#333333", linetype = "dotted") +
+    coord_quickmap(xlim = c(5.7,10.8), ylim = c(45.7, 48.2), expand = F) + 
+    geom_polygon(data = world.df, aes(long, lat, group = group), #alpha = 0.3, fill = "#333333",
+                 colour = "lightgrey", size = 0.25, linetype = "dotted") +
     geom_polygon(data = co.df,  aes(x = long, y = lat, group = group),
                  size = 1.3, colour = border.color, fill=NA) +
     geom_polygon_interactive(aes(lng, lat, group = code, fill = pc, data_id = code, tooltip = tp), 

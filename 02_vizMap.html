@@ -216,7 +216,6 @@ library(mapdata)</code></pre>
 <pre class="r"><code>world.df &lt;- map_data(map=&quot;worldHires&quot;) %&gt;% 
   filter(region %in% c(&quot;France&quot;, &quot;Italy&quot;, &quot;Germany&quot;, &quot;Austria&quot;))
 
-
 if(communeCH_geo_year == 2015) {
   communes &lt;- ch.df %&gt;% select(GEMNAME, BFSNR) %&gt;%
     rename(commune = GEMNAME, code = BFSNR) %&gt;%
@@ -342,9 +341,9 @@ for (lang in colnames(txt)) {
   ))
    
   map &lt;- ggplot(ddd) + 
-    coord_quickmap(xlim = c(5.7,10.8), ylim = c(45.7, 48), expand = F) + 
-    geom_polygon(data = world.df, aes(long, lat, group = group), 
-                 colour = &quot;white&quot;, size = 0.2, alpha = 0.3, fill = &quot;#333333&quot;, linetype = &quot;dotted&quot;) +
+    coord_quickmap(xlim = c(5.7,10.8), ylim = c(45.7, 48.2), expand = F) + 
+    geom_polygon(data = world.df, aes(long, lat, group = group), #alpha = 0.3, fill = &quot;#333333&quot;,
+                 colour = &quot;lightgrey&quot;, size = 0.2, linetype = &quot;dotted&quot;) +
     geom_polygon(data = co.df,  aes(x = long, y = lat, group = group),
                  size = 1.3, colour = border.color, fill=NA) +
     geom_polygon_interactive(aes(lng, lat, group = code, fill = pc, data_id = code, tooltip = tp), 

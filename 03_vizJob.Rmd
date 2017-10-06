@@ -1,0 +1,188 @@
+---
+title: "viz isco frontalier"
+author: "Duc-Quang Nguyen | swissinfo.ch"
+date: " 2017"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: simplex
+---
+## Txt
+
+#### Snippets
+
+## Data
+
+## Related
+
+
+```{r setup, include=FALSE}
+frontalier.file <- "data/px-x-0302010000_108.csv"
+espa.file <- "data/je-f-03.02.01.21_cleaned_shaped.csv"
+translation.file <- "input/job suisse étranger frontalier - Sheet1.csv"
+
+library(zoo)
+library(tidyverse)
+library(scales)
+library(magrittr)
+library(swiMap)
+library(swiTheme)
+
+### Interactive 
+library(htmltools)
+library(swiRcharts)
+library(highcharter)
+```
+
+```{r data load & wrangle}
+txt <- loadTranslation(translation.file)
+###		Load data and shape
+
+## frontaliers
+f.read <- read.csv(frontalier.file, sep = "\t", encoding = "latin1", 
+  stringsAsFactor = F, check.names = F, skip = 1)
+f.read <- f.read %>% select(-Sexe, -`Canton de travail`, -`Classe d'âge`)
+
+# make the data long
+frontaliers <- cbind(f.read %>% tidyr::gather(année, valeur, -`Grand groupe de profession`), nationalité = "frontalier")
+frontaliers <- frontaliers %>% rename(profession = `Grand groupe de profession`)
+# transform Q time to date
+frontaliers$année <- as.Date(as.yearqtr(frontaliers$année, format = "%YQ%q")) + months(3) -1
+
+## ESPA data
+e.read <- read.csv(espa.file, stringsAsFactor = F, check.names = F)
+# remove empty col
+e.read <- e.read[,-which(colnames(e.read) =="")]
+
+## Hack change the trimester colanmes to Q1, Q2, Q3 and Q4 after the year.
+ncolname <- ifelse(grepl("^I\\n", colnames(e.read)), 
+  paste0(gsub("^I\\n", "", colnames(e.read)), "Q1"),  colnames(e.read))
+ncolname <- ifelse(grepl("^II ?\\n", ncolname), 
+  paste0(gsub("^II ?\\n", "", ncolname), "Q2"),  ncolname)
+ncolname <- ifelse(grepl("^III\\n", ncolname), 
+  paste0(gsub("^III\\n", "", ncolname), "Q3"),  ncolname)
+ncolname <- ifelse(grepl("^IV\\n", ncolname), 
+  paste0(gsub("^IV\\n", "", ncolname), "Q4"),  ncolname)
+
+colnames(e.read) <- ncolname
+
+# make the data long
+espa <- do.call(rbind, by(e.read, e.read$nationalité, function(ee) {
+	cbind(ee %>% select(-nationalité) %>% tidyr::gather(année, valeur, -Total), nationalité = ee$nationalité[1])
+}))
+rownames(espa) <- NULL
+colnames(espa)[1] <- 'profession'
+
+# transform Q time to date
+espa$année <- as.Date(as.yearqtr(espa$année, format = "%YQ%q")) + months(3) -1
+
+### match both datasets profession and rename some professions
+frontaliers <- frontaliers[-which(frontaliers$profession == "Grand groupe de profession - Total"),]
+
+frontaliers2espa <- unique(frontaliers[,1])
+frontaliers2espa[! frontaliers2espa %in% unique(espa[,1])]
+
+frontaliers2espa <- 
+  c('Non attribuable', 
+    "Métiers de l\u0092'industrie et de l\u0092'artisanat",
+    "Employés de type administrati" )
+
+names(frontaliers2espa) <- 
+  c("Sans indication/ne sait pas", 
+    "Métiers de l’industrie et de l’artisanat", 
+    "Employés de type administratif")
+
+#match( frontaliers2espa, "Métiers de l\u0092'industrie et de l\u0092'artisanat")
+
+idx <- match(frontaliers[,1], frontaliers2espa)
+frontaliers[which(!is.na(idx)),1] <- names(frontaliers2espa)[na.omit(idx)] 
+frontaliers[,1] <- gsub("\\\u0092", "’", frontaliers[,1])
+
+stopifnot(frontaliers[,1] %in% espa[,1])
+
+## rbind
+espa$valeur <- as.numeric(espa$valeur)
+espa[which(is.na(espa$valeur)), "valeur"] <- 0
+espa$valeur  <- espa$valeur * 1000
+data <- rbind(frontaliers, espa)
+
+### Jobs by nationality ###
+data <- data %>% group_by(année, nationalité) %>% 
+  mutate(
+    tot_nat = sum(valeur),
+    perc = (valeur / tot_nat) * 100) %>% 
+  ungroup() %>% 
+  filter(profession != "Sans indication/ne sait pas" )
+
+# find the moment where values for 3 origins
+tStart <- data %>% group_by(nationalité) %>%
+  summarise(tStart = min(année)) %>%
+  ungroup() %>% .$tStart %>% max()
+
+# add isco code
+iscom <- structure(1:9, names = unique(data$profession))
+          
+data %<>% 
+  mutate(isco = iscom[match(profession, names(iscom))])
+
+```
+
+```{r pre viz}
+#pdfswi_long("profession_lines.pdf")
+ggplot(data = data %>% filter(année >= tStart) , aes(x = année, y = perc, group = nationalité, color = nationalité)) +
+	geom_line(size = 0.5, alpha = 0.8) + 
+  facet_wrap(~ profession, ncol = 3, scales = "free_x") + 
+  theme_swi() +
+  theme(legend.position = "top") + ylab("Profession %")
+```
+
+```{r viz}
+chart.height <- 220
+bg.colour <-  "#f2f2f2" 
+y.max <- data %>% filter(année >= tStart) %>% .$perc %>% max()
+
+lang <- 'FR'
+isco.sub <- 1
+
+plotSingeChart <- function(data, isco.sub) {
+  dd <- data %>% filter(isco == isco.sub, année >= tStart)
+  
+  job <- txt[as.character(isco.sub), lang]
+  dd %<>% mutate(profession = job)  
+  
+  hchart(
+    dd, "line", hcaes(x = année, y = perc, group = nationalité)
+  ) %>% 
+    hc_add_theme(hc_theme_swi) %>% 
+    hc_chart(
+      backgroundColor = bg.colour, height = chart.height, 
+      spacing = list(-5, 8, 3, 3), borderRadius = 4,
+      borderColor = "white", borderWidth = 1
+    ) %>% 
+    hc_legend(enabled = F) %>%
+    hc_xAxis(
+      useHTML =T, 
+      #lineColor = color, tickLength = 7, 
+      allowDecimals = F, maxPadding = 0, minPadding = 0,
+      # labels = list(autoRotation = list(0),
+      #               padding = 1, style = list(fontSize = "1em", textOverflow = 'none'),
+      #               enabled = ifelse(teaserifiy == T, T, F)),
+      gridLineWidth = 0,  title = "", reversed = ifelse(lang == "AR", T, F)
+    ) %>%
+    hc_yAxis(
+      useHTML = T, labels = list(format = '{value}%', style = list(fontSize = "0.8em")),
+      gridLineWidth = 1, ceiling = y.max, tickInterval = 10, #gridLineColor = "#808080",
+      minPadding = 0, maxPadding = 0, max = y.max,
+      title = "", opposite = ifelse(lang == "AR", T, F)
+    ) %>% 
+     hc_plotOptions(line = list(marker = list(enabled = FALSE))) %>%
+    hc_title(
+      text = job, style = list("fontSize" = "0.8em", "color" = '#1c3a4a'),
+      floating = T, align = "center", #align = ifelse(lang == "AR", "right", "left"), 
+      useHTML = T, y = 23, x = ifelse(lang == "AR", 50, -50)) 
+  
+  
+}
+
+```

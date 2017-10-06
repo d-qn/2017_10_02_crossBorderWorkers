@@ -1,0 +1,20 @@
+code,EN,FR,DE,IT,PT,AR,RU,ES,JA,ZH
+main.title,,Dans quelles professions trouve-t-on le plus d'immigrés?,,,,,,,,
+descr,,"Proportion de travailleurs nés en <span style=""color:#b15953; font-weight:bold;"">Suisse</span> et à <span style=""color:#4c6570; font-weight:bold;"">l'étranger</span> par groupe de professions. Les professions sont présentées par ordre décroissant du niveau de compétence et de spécialisation. La hauteur des barres reflète le nombre total d'emplois.",,,,,,,,
+h3,,Les métiers peu qualifés comptent la plus grande proportion d'immigrés,,,,,,,,
+ori.CH,,Suisses,,,,,,,,
+ori.nonCH,,Etrangers,,,,,,,,
+ori.fron,,Frontaliers,,,,,,,,
+1,Managers,Directeurs et cadres,Führungskräfte,Direttori e quadri,Executivos,مدراء وكوادر (أطر),Руководящие кадры,Ejecutivos,経営・管理,管理人员
+2,Professionals,Prof. intellectuelles et scientifiques,Akademische Berufe,Prof. intellettuali e scientifiche,Profissões acadêmicas,مهن فكرية وعلمية,Профессии в сфере высшего образования,Académicos,学問・科学,学术人员
+3,Technicians and associate professionals,Professions techniques ou apparentées,Techniker und gleichrangige Berufe,Professioni tecniche o simili,Profissões técnicas,مهن تقنية أو شبيهة,Инженерные и схожие специальности,Profesionales técnicos,技術,技术人员与同级人员
+4,Clerical support workers,Employés administratifs,Bürokräfte und verwandte Berufe,Impiegati amministrativi,Empregados administrativos,موظفون إداريون,Административные и схожие должности,Empleados administrativos,事務,文秘工作人员
+5,Service and sales workers,Services & commerçants,Dienstleistungsberufe und Verkauf,Servizi e commercianti,Comerciantes e profissões de serviço,مُوفرو خدمات وتُجّار,Профессии в сфере услуг и продаж,Comerciantes y personal del sector servicio,商業・サービス,服务与销售人员
+6,Skilled agricultural workers,"Agriculteurs, sylviculteurs",Fachkräfte in Land- und Forstwirtschaft,"Agricoltori, silvicoltori",Agricultores e silvicultores,مزارعون ومستغلو الغابات,Специалисты сельского и лесного хозяйства,Agricultores y silvicultores,農林業,农林业专业人员
+7,Craft and related trades workers,Métiers de l’industrie et de l’artisanat,Handwerks- und verwandte Berufe,Mestieri dell'industria e dell'artigianato,Mestres de ofício e artesões,مهن صناعية وحرفية,Ремесленные и схожие специальности,Artesanos ,製造・建設,手工业者
+8,Machine operators and assemblers,Conducteurs et assembleurs,"Anlagen- und Maschinenbedienung, Montage","Conduttori di impianti, addetti al montaggio",Operadores de máquinas e montadores,مُشغلو آلات ومُجمِّعون,"Обслуживание промышленного оборудования, монтаж",Operadores de maquinaria y montadores,機械・整備,机械操作工及装配工
+9,Elementary occupations,Professions non qualifiées,Hilfsarbeitskräfte,Professioni non qualificate,Profissionais não qualificados,مهن غير مؤهلة,Подсобные рабочие,Profesionales no cualificados,資格不要の職業,帮工
+source,Source,source,Quelle,Fonte,fonte,المصدر,Источник,Fuente,出典,来源
+source.name,,Office fédéral de la statistique: STAF & ESPA,,,,,,,,
+code,Code,code,Code,Codice,código,الرمز,Код,código,コード,代码
+code.name,highcharter,highcharter,highcharter,highcharter,highcharter,highcharter,highcharter,highcharter,highcharter,highcharter
