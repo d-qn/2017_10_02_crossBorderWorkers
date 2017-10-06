@@ -206,8 +206,14 @@ cities &lt;- read_csv(cities.file) %&gt;% rename(pop = size)</code></pre>
 # subset only europe
 #world.df %&gt;% filter(REGION == 150) %&gt;% select(NAME) %&gt;% distinct()
 #world.df %&lt;&gt;% filter
-library(mapdata)
-world.df &lt;- map_data(map=&quot;worldHires&quot;) %&gt;% 
+library(mapdata)</code></pre>
+<pre><code>## Loading required package: maps</code></pre>
+<pre><code>## 
+## Attaching package: 'maps'</code></pre>
+<pre><code>## The following object is masked from 'package:purrr':
+## 
+##     map</code></pre>
+<pre class="r"><code>world.df &lt;- map_data(map=&quot;worldHires&quot;) %&gt;% 
   filter(region %in% c(&quot;France&quot;, &quot;Italy&quot;, &quot;Germany&quot;, &quot;Austria&quot;))
 
 
@@ -317,7 +323,8 @@ for (lang in colnames(txt)) {
   bTheme &lt;- function() {
     bk_mapTheme(base_family = txt['base.font', lang], title_family = txt['title.font', lang], subtitle_family = txt['base.font', lang])
   }
-  
+  ng_countries &lt;- neighboor_countries %&gt;% as.tibble() %&gt;%
+    mutate(label = txt[id, lang])
   largeAgglo &lt;- cities 
    # get translations for large agglos and languages regions
   largeAgglo$label &lt;- txt[c('Zürich', 'Genève', 'Basel', 'Bern', 'Lausanne'), lang]
@@ -335,9 +342,9 @@ for (lang in colnames(txt)) {
   ))
    
   map &lt;- ggplot(ddd) + 
-    coord_quickmap(xlim = c(5.7,10.8), ylim = c(45.7, 47.9), expand = F) + 
+    coord_quickmap(xlim = c(5.7,10.8), ylim = c(45.7, 48), expand = F) + 
     geom_polygon(data = world.df, aes(long, lat, group = group), 
-                 colour = &quot;white&quot;, size = 0.2, alpha = 0.3, fill = &quot;#333333&quot;) +
+                 colour = &quot;white&quot;, size = 0.2, alpha = 0.3, fill = &quot;#333333&quot;, linetype = &quot;dotted&quot;) +
     geom_polygon(data = co.df,  aes(x = long, y = lat, group = group),
                  size = 1.3, colour = border.color, fill=NA) +
     geom_polygon_interactive(aes(lng, lat, group = code, fill = pc, data_id = code, tooltip = tp), 
@@ -358,7 +365,7 @@ for (lang in colnames(txt)) {
   ) + 
     scale_size(range = c(3,7), name = paste0(txt['agglosize', lang], &quot;  &quot;)) + 
     guides(size = &quot;none&quot;) + 
-    geom_text(
+  geom_text(
       data = largeAgglo,
       aes(x = lon, y = lat, group = 1, label = label),
       alpha = 0.5,
@@ -367,7 +374,17 @@ for (lang in colnames(txt)) {
       nudge_y = -0.082,
       nudge_x = 0.05,
       size = 3.7
-    ) + theme( axis.line = element_blank())
+    ) + theme( axis.line = element_blank()) +
+  geom_text(
+    data = ng_countries,
+    aes(x = lon, y = lat, group = 1, label = label, hjust = hjust),
+    family = txt['title.font', lang],
+    colour = colourText_bkbg,
+    nudge_y = -0.082,
+    nudge_x = 0.05,
+    size = 8,
+    alpha = 0.2
+  )
   
   tooltip_css &lt;- &quot;background-color:#333333;padding:0px;margin:0px;border-radius:4px;&quot;
   
@@ -375,6 +392,7 @@ for (lang in colnames(txt)) {
     code = {print(map2)}, 
     tooltip_extra_css = tooltip_css,
     height_svg = 4.5,
+    width = 1,
     zoom_max = 1,
     hover_css = &quot;fill:#4c6570;&quot;,
     fonts = list(fontname_sans = 'Open Sans Condensed',  fontname_serif = 'Open Sans Condensed')
@@ -403,6 +421,7 @@ for (lang in colnames(txt)) {
     }
     file.rename(from = fileToMove, to = paste0(&quot;output/&quot;, fileToMove))
 }</code></pre>
+<pre><code>## Warning: package 'gdtools' was built under R version 3.4.1</code></pre>
 </div>
 
 

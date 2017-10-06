@@ -1,7 +1,7 @@
 code,EN,FR,DE,IT,PT,AR,RU,ES,JA,ZH
 title,,Pourcentage d'emplois occupé par des frontaliers,,,,,,,,
 descr,,Les communes sont colorées d'après la proportion de travailleurs frontaliers étrangers. ,,,,,,,,
-footer,,Estimation basée sur le nombre d'emplois par commune en {{job.max}} et d'employés frontaliers en {{cbw.date}},,,,,,,,
+footer,,Estimation basée sur le nombre d'emplois par commune en 2015 et d'employés frontaliers en 2017Q2,,,,,,,,
 frontalier.tp,Foreigners,% de travailleurs frontaliers,Ausländerinnen und Ausländer,Stranieri,Estrangeiros,Foreigners,Иностранцы ,Extranjeros,外国人,外籍人士
 frontalier2.tp,Percentage points since 2010,frontaliers,Prozentpunkte seit 2010,Punti percentuali dal 2010,pontos percentuais desde 2010,Percentage points since 2010,Динамика начиная с 2010 года,"
 
@@ -18,7 +18,7 @@ Lausanne,Lausanne,Lausanne,Lausanne,Losanna,Lausanne,Lausanne,Лозанна,Lau
 it.nat,Italy,Italie,Italien,Italia,Itália,Italy,Италия,Italia ,イタリア,意大利 
 de.nat,Germany,Allemagne,Deutschland,Germania,Alemanha,Germany,Германия,Alemania,ドイツ,德国
 fr.nat,France,France,Frankreich,Francia,França,France,Франция,Francia,フランス,法国
-au.nat,,Auriche,,,,,,,,
+au.nat,,Autriche,,,,,,,,
 source,Source,source,Quelle,Fonte,fonte,المصدر,Источник,Fuente,出典,来源
 source.name,Federal Statistical Office and swisstopo | swissinfo.ch,Office fédéral de la statistique et swisstopo  | swissinfo.ch ,Bundesamt für Statistik und swisstopo | swissinfo.ch ,Ufficio federale di statistica e swisstopo | swissinfo.ch ,Secretaria Federal de Estatísticas e Swisstopo | swissinfo.ch ,فليكر، المكتب الفدرالي للإحصاء، المكتب الفدرالي السويسري للطبوغرافيا swissinfo.ch I,Источник: Bundesamt für Statistik и swisstopo | swissinfo.ch ,Oficina Federal de Estadística y swisstopo | swissinfo.ch ,連邦統計局、swisstopo  | swissinfo.ch ,瑞士联邦统计局及swisstopo | 瑞士资讯swissinfo.ch 
 base.font,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,PingFang SC Semibold,PingFang SC Semibold
